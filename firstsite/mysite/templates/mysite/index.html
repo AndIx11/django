@@ -5,19 +5,18 @@
 
 <h1>{{title}}</h1>
 <p>Содержимое главной страницы</p>
-<ul>
+<ul class="list-articles">
     {% for p in posts %}
-    {% if p.is_published %}
     <li>
         <h2>{{p.title}}</h2>
         {% autoescape off %}
-        <p>{{p.content|linebreaks|truncatewords:50}}</p>
+        {{p.content|linebreaks|truncatewords:50}}
         {% endautoescape %}
-        <p ><a href="{% url 'post' p.id %}">Читать пост</a></p>
-        {% if not forloop.last %}
-        {% endif %}
+        <div class="clear"></div>
+        <p class="link-read-post">
+            <a href="{{ p.get_absolute_url }}">Читать описание</a>
+        </p>
     </li>
-    {% endif %}
     {% endfor %}
 </ul>
 {% include 'mysite/includes/nav.html' %}

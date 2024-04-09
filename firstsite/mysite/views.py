@@ -1,6 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound
-
+from mysite.models import MySite
 
 menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Добавить статью", 'url_name': 'addpage'},
@@ -8,38 +8,6 @@ menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Войти", 'url_name': 'login'}
         ]
 
-data_db = [
-    {'id': 1, 'title': 'Льюис Кэрролл', 'content':
-        '''<h1>«Алиса в стране чудес»</h1> «Приключения Алисы в Стране чудес» 
-        (англ. Alice’s Adventures in Wonderland), часто используется сокращённый 
-        вариант «Алиса в Стране чудес» (англ. Alice in Wonderland) — 
-        сказка, написанная английским математиком, поэтом и прозаиком 
-        Чарльзом Лютвиджем Доджсоном под псевдонимом Льюис Кэрролл и изданная 
-        в 1865 году. В ней рассказывается о девочке по имени Алиса, которая 
-        попадает сквозь кроличью нору в воображаемый мир, населённый странными 
-        антропоморфными существами. Сказка пользуется устойчивой популярностью 
-        как у детей, так и у взрослых. Книга считается одним из лучших образцов 
-        литературы в жанре абсурда; в ней используются многочисленные математические, 
-        лингвистические и философские шутки и аллюзии. Ход повествования и его структура 
-        оказали сильное влияние на искусство, особенно на жанр фэнтези. «Алиса в Зазеркалье» 
-        является сюжетным продолжением произведения. «Приключения Алисы в Стране чудес» 
-        является литературной обработкой рукописной книги «Приключения Алисы под землёй».''',
-     'is_published': True},
-    {'id': 2, 'title': 'Книга 2', 'content':
-        'Описание книги 2', 'is_published': False},
-    {'id': 3, 'title': 'Джером Сэлинджер', 'content':
-        '''<h1>«Над пропастью во ржи»</h1> (англ. The Catcher in the Rye — «Ловец во ржи», 1951) — 
-        роман американского писателя Джерома Сэлинджера. В нём от лица 17-летнего юноши по имени 
-        Холден Колфилд откровенно рассказывается о его обострённом восприятии американской 
-        действительности и неприятии общих канонов и морали современного общества. Произведение 
-        имело огромную популярность как среди молодёжи, так и среди взрослого населения, оказав 
-        существенное влияние на мировую культуру второй половины XX века.
-        Роман был переведён почти на все основные языки мира. В 2005 году журнал Time включил 
-        роман в список 100 лучших англоязычных романов, написанных начиная с 1923 года, а издательство 
-        Modern Library включило его в список 100 лучших англоязычных романов XX столетия. В США 
-        роман часто подвергался критике и был запрещён в школах из-за большого количества нецензурной 
-        лексики.''', 'is_published': True},
-]
 
 cats_db = [
     {'id': 1, 'name': 'Новинки'},
@@ -56,22 +24,28 @@ def show_category(request, cat_id):
     data = {
         'title': 'Отображение по рубрикам',
         'menu': menu,
-        'posts': data_db,
+        'posts': MySite.published.all(),
         'cat_selected': cat_id,
     }
     return render(request, 'mysite/index.html', context=data)
 
 
-def show_post(request, post_id):
-    return HttpResponse(f"Отображение статьи с id = {post_id}")
+def show_post(request, post_slug):
+    post = get_object_or_404(MySite, slug=post_slug)
+    data = {'title': post.title,
+            'menu': menu,
+            'post': post,
+            'cat_selected': 0,
+            }
+    return render(request, 'mysite/post.html', context=data)
 
 
 def index(request):  # HttpRequest
+    posts = MySite.objects.filter(is_published=1)
     data = {
         'title': 'Главная страница',
         'menu': menu,
-        'posts': data_db,
-        'cat_selected': 0,
+        'posts': posts,
     }
     return render(request, 'mysite/index.html', context=data)
 
