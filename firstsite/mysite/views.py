@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound
-from mysite.models import MySite
+from mysite.models import MySite, Category, TagPost
 
 menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Добавить статью", 'url_name': 'addpage'},
@@ -9,23 +9,27 @@ menu = [{'title': "О сайте", 'url_name': 'about'},
         ]
 
 
-cats_db = [
-    {'id': 1, 'name': 'Новинки'},
-    {'id': 2, 'name': 'Бестселлеры'},
-    {'id': 3, 'name': 'Триллеры'},
-    {'id': 4, 'name': 'Фантастика'},
-    {'id': 5, 'name': 'Детская литература'},
-
-]
-
-
 # Create your views here.
-def show_category(request, cat_id):
+def show_tag_postlist(request, tag_slug):
+    tag = get_object_or_404(TagPost, slug=tag_slug)
+    posts = tag.tags.filter(is_published=MySite.Status.PUBLISHED)
     data = {
-        'title': 'Отображение по рубрикам',
+        'title': f'Тег: {tag.tags}',
         'menu': menu,
-        'posts': MySite.published.all(),
-        'cat_selected': cat_id,
+        'posts': posts,
+        'cat_selected': None,
+    }
+    return render(request, 'mysite/index.html', context=data)
+
+
+def show_category(request, cat_slug):
+    category = get_object_or_404(Category, slug=cat_slug)
+    posts = MySite.published.filter(cat_id=category.pk)
+    data = {
+        'title': f'Рубрика: {category.name}',
+        'menu': menu,
+        'posts': posts,
+        'cat_selected': category.pk,
     }
     return render(request, 'mysite/index.html', context=data)
 
@@ -45,7 +49,8 @@ def index(request):  # HttpRequest
     data = {
         'title': 'Главная страница',
         'menu': menu,
-        'posts': posts,
+        'posts': MySite.published.all(),
+        'cat_selected': 0,
     }
     return render(request, 'mysite/index.html', context=data)
 
