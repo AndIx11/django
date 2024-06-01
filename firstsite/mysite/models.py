@@ -21,6 +21,9 @@ class MySite(models.Model):
     is_published = models.BooleanField(choices=Status.choices, default=Status.DRAFT)
     cat = models.ForeignKey('Category', on_delete=models.PROTECT, related_name='posts')
     tags = models.ManyToManyField('TagPost', blank=True, related_name='tags')
+    isbn = models.OneToOneField('ISBN', on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='isbn')
+    view_count = models.IntegerField(blank='True', default=0)
     objects = models.Manager()
     published = PublishedModel()
 
@@ -33,6 +36,14 @@ class MySite(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ISBN(models.Model):
+    number_13 = models.CharField(max_length=25)
+    book_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.number_13
 
 
 class Category(models.Model):
