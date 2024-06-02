@@ -9,6 +9,10 @@ class PublishedModel(models.Manager):
         return super().get_queryset().filter(is_published=MySite.Status.PUBLISHED)
 
 
+class UploadFiles(models.Model):
+    file = models.FileField(upload_to='uploads_model')
+
+
 def translit_to_eng(s: str) -> str:
     d = {'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e',
          'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i', 'к': 'k', 'л': 'l',
@@ -35,6 +39,7 @@ class MySite(models.Model):
     tags = models.ManyToManyField('TagPost', blank=True, related_name='tags', verbose_name="Тэги")
     isbn = models.OneToOneField('ISBN', on_delete=models.SET_NULL,
                                 null=True, blank=True, related_name='isbn', verbose_name="Номер ISBN")
+    photo = models.ImageField(upload_to="photos/%Y/%m/%d/", default=None, blank=True, null=True, verbose_name="Фото")
     view_count = models.IntegerField(blank='True', default=0)
     objects = models.Manager()
     published = PublishedModel()

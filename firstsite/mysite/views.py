@@ -1,6 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseNotFound
-from mysite.models import MySite, Category, TagPost
+
+from mysite.forms import AddPostForm, UploadFileForm
+from mysite.models import MySite, Category, TagPost, UploadFiles
+import uuid
 
 menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Добавить статью", 'url_name': 'addpage'},
@@ -55,13 +58,44 @@ def index(request):  # HttpRequest
     return render(request, 'mysite/index.html', context=data)
 
 
+def handle_uploaded_file(f):
+    name = f.name
+    ext = ''
+
+    if '.' in name:
+        ext = name[name.rindex('.'):]
+        name = name[:name.rindex('.')]
+    suffix = str(uuid.uuid4())
+    with open(f"uploads/{name}_{suffix}{ext}", "wb+") as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
 def about(request):
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            fp = UploadFiles(file=form.cleaned_data['file'])
+            fp.save()
+    else:
+        form = UploadFileForm()
     return render(request, 'mysite/about.html',
-                  {'title': 'О сайте', 'menu': menu})
+                  {'title': 'О сайте',
+                   'menu': menu, 'form': form})
 
 
 def addpage(request):
-    return HttpResponse("Добавление статьи")
+    if request.method == 'POST':
+        form = AddPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = AddPostForm()
+    return render(request, 'mysite/addpage.html',
+                  {'menu': menu,
+                   'title': 'Добавление статьи',
+                   'form': form})
 
 
 def contact(request):
