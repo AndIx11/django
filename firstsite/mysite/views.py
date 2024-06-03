@@ -1,5 +1,5 @@
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseNotFound
@@ -158,6 +158,11 @@ def about(request):
                   {'page_obj': page_obj, 'title': 'О сайте'})
 
 
+@permission_required(perm='mysite.view_mysite', raise_exception=True)
+def contact(request):
+    return HttpResponse("Обратная связь")
+
+
 #def addpage(request):
 #    if request.method == 'POST':
 #        form = AddPostForm(request.POST, request.FILES)
@@ -172,8 +177,9 @@ def about(request):
 #                   'form': form})
 
 
-class AddPage(LoginRequiredMixin, DataMixin, CreateView):
+class AddPage(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, CreateView):
     model = MySite
+    permission_required = 'mysite.add_mysite'
     #form_class = AddPostForm
     fields = ['title', 'slug', 'content', 'is_published', 'cat', 'isbn', 'tags']
     template_name = 'mysite/addpage.html'
@@ -188,13 +194,14 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
 
 class UpdatePage(DataMixin, UpdateView):
     model = MySite
+    permission_required = 'mysite.change_mysite'
     fields = ['title', 'slug', 'content', 'is_published', 'cat', 'isbn', 'tags']
     template_name = 'mysite/addpage.html'
     success_url = reverse_lazy('home')
     title_page = 'Редактирование статьи'
 
 
-class DeletePage(DataMixin, DeleteView):
+class DeletePage(PermissionRequiredMixin, DataMixin, DeleteView):
     model = MySite
     template_name = 'mysite/deletepage.html'
     success_url = reverse_lazy('home')

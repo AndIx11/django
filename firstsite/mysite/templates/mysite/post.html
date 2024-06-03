@@ -2,6 +2,14 @@
 
 {% block breadcrumbs %}
 <!-- Теги -->
+{{ perms }}
+
+{% if perms.mysite.change_mysite %}
+<p >
+    <a href="{% url 'edit_page' post.slug %}">Редактировать</a>
+</p>
+{% endif %}
+
 {% with post.tags.all as tags %}
 {% if tags %}
 <ul class="tags-list">
