@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseNotFound
@@ -11,6 +13,7 @@ from mysite.models import MySite, Category, TagPost, UploadFiles
 import uuid
 
 from mysite.utils import DataMixin
+from users.forms import RegisterUserForm
 
 menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Добавить статью", 'url_name': 'addpage'},
@@ -138,6 +141,7 @@ def handle_uploaded_file(f):
             destination.write(chunk)
 
 
+@login_required
 def about(request):
     contact_list = MySite.published.all()
     paginator = Paginator(contact_list, 3)
@@ -168,7 +172,7 @@ def about(request):
 #                   'form': form})
 
 
-class AddPage(DataMixin, CreateView):
+class AddPage(LoginRequiredMixin, DataMixin, CreateView):
     model = MySite
     #form_class = AddPostForm
     fields = ['title', 'slug', 'content', 'is_published', 'cat', 'isbn', 'tags']
@@ -177,7 +181,8 @@ class AddPage(DataMixin, CreateView):
     title_page = 'Добавление статьи'
 
     def form_valid(self, form):
-        form.save()
+        w = form.save(commit=False)
+        w.author = self.request.user
         return super().form_valid(form)
 
 

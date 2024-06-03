@@ -24,6 +24,8 @@ from mysite.views import page_not_found
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('mysite.urls')),
+    path('users/', include('users.urls', namespace="users:login")),
+    path('__debug__/', include("debug_toolbar.urls")),
 ]
 
 if settings.DEBUG:

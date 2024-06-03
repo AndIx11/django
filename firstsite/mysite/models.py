@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -39,6 +40,7 @@ class MySite(models.Model):
     tags = models.ManyToManyField('TagPost', blank=True, related_name='tags', verbose_name="Тэги")
     isbn = models.OneToOneField('ISBN', on_delete=models.SET_NULL,
                                 null=True, blank=True, related_name='isbn', verbose_name="Номер ISBN")
+    author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, related_name='posts', null=True, default=None)
     photo = models.ImageField(upload_to="photos/%Y/%m/%d/", default=None, blank=True, null=True, verbose_name="Фото")
     view_count = models.IntegerField(blank='True', default=0)
     objects = models.Manager()
